@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+
+  "name": "Url Switcher",
+  "description": "This extension switches between urls each x seconds",
+  "version": "1.0",
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs"
+  ]
+}
