@@ -1,20 +1,24 @@
 document.addEventListener('DOMContentLoaded', init, false);
+let started = false
 function init() {
     load()
-    document.querySelector('#start').addEventListener('click', start, false)
+    startEl().addEventListener('click', start, false)
     document.querySelector('#submit').addEventListener('click', save, false);
-    document.querySelector('#stop').addEventListener('click', stop, false);
+    stopEl().addEventListener('click', stop, false);
 }
 
 function stop() {
     chrome.runtime.sendMessage({data: "stop"}, function (response) {
-        //TODO show stopped
+        toggleVisibility([startEl(), stopEl()])
+        started = false
     });
 }
 
 function start() {
+    save()
     chrome.runtime.sendMessage({data: "start"}, function (response) {
-        //TODO show running
+        toggleVisibility([startEl(), stopEl()])
+        started = true
     });
 }
 
@@ -25,20 +29,55 @@ function load() {
             return
         const {urls, timeout} = obj.data
         urls.forEach((url, index) => getUrlsInputs().item(index).value = url)
-        document.querySelector('#interval').value = timeout != null ? timeout : 5
+        intervalEl().value = timeout != null ? timeout : 5
+    })
+    chrome.runtime.sendMessage({data: 'status'}, function(status) {
+        if (status)
+            toggleVisibility([startEl(), stopEl()])
     })
 }
 
 function save() {
     const urls = getUrlInputValues()
-    const timeout = document.querySelector('#interval').value
+    const timeout = intervalEl().value
     chrome.storage.sync.set({data: {urls: urls, timeout: timeout}})
 }
 
 function getUrlInputValues() {
-    return [].map.call(document.querySelectorAll('.urls'), el => el.value)
+    let urls = [].map.call(document.querySelectorAll('.urls'), el => el.value)
+    urls = urls.filter( url => url.length > 0)
+    urls = urls.map(setHttp)
+    return urls
+}
+
+function setHttp(link) {
+    if (link.search(/^http[s]?:\/\//) === -1) {
+        link = 'https://' + link;
+    }
+    return link;
 }
 
 function getUrlsInputs() {
     return document.querySelectorAll('.urls')
+}
+function startEl() {
+    return document.querySelector('#start')
+}
+function stopEl() {
+    return document.querySelector('#stop')
+}
+function intervalEl() {
+    return document.querySelector('#interval')
+}
+function toggleVisibility(elements) {
+    elements.forEach(el => {
+        switch (el.style.display) {
+            case 'none':
+                el.style.display = 'inherit'
+                break
+            default:
+                el.style.display = 'none'
+                break
+        }
+    })
 }
