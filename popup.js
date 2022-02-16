@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', init, false);
-let started = false
 function init() {
     load()
     startEl().addEventListener('click', start, false)
@@ -8,17 +7,15 @@ function init() {
 }
 
 function stop() {
-    chrome.runtime.sendMessage({data: "stop"}, function (response) {
-        toggleVisibility([startEl(), stopEl()])
-        started = false
+    chrome.runtime.sendMessage({data: "stop"}, function (started) {
+        started? toggleVisibility([startEl(), stopEl()]):''
     });
 }
 
 function start() {
     save()
-    chrome.runtime.sendMessage({data: "start"}, function (response) {
-        toggleVisibility([startEl(), stopEl()])
-        started = true
+    chrome.runtime.sendMessage({data: "start"}, function (started) {
+        started? toggleVisibility([startEl(), stopEl()]):''
     });
 }
 
